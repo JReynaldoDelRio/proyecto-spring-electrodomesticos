@@ -49,14 +49,34 @@ public class DetalleCarritoImpl implements DetalleCarritoService {
 
     @Override
     public DetalleCarrito actualizarDetalleCarrito(DetalleCarrito objDetalleCarrito) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'actualizarDetalleCarrito'");
+        int productId = objDetalleCarrito.getProductoid();
+        int cantidad = objDetalleCarrito.getCantidad();
+
+        Optional<Producto> productoOptional = productoRepo.findById(productId);
+        if (productoOptional.isPresent()) {
+            Producto producto = productoOptional.get();
+            BigDecimal precio = producto.getPrecio();
+            BigDecimal subTotal = precio.multiply(BigDecimal.valueOf(cantidad));
+            objDetalleCarrito.setSubtotal(subTotal);
+
+            Optional<DetalleCarrito> detalleExistenteOptional = detalleRepo.findById(objDetalleCarrito.getDetailid());
+            if (detalleExistenteOptional.isPresent()) {
+                DetalleCarrito detalleExistente = detalleExistenteOptional.get();
+                detalleExistente.setCantidad(objDetalleCarrito.getCantidad());
+                detalleExistente.setSubtotal(subTotal);
+
+                return detalleRepo.save(detalleExistente);
+            }
+        } else {
+            throw new RuntimeException("Producto no encontrado");
+        }
+        return objDetalleCarrito;
     }
 
     @Override
     public void eliminarDetalleCarrito(int objDetalleCarrito) {
         // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'eliminarDetalleCarrito'");
+        detalleRepo.deleteById(objDetalleCarrito);
     }
 
 }
